@@ -1,0 +1,10 @@
+cradle:
+  stack:
+    - path: "./src"
+      component: "mlflow-hs:lib"
+
+        # - path: "./app/Paths_mlflow_hs.hs"
+        #   component: "mlflow-hs:exe:mlflow-hs-exe"
+
+    - path: "./test"
+      component: "mlflow-hs:test:mlflow-hs-test"
