@@ -447,6 +447,9 @@ getRun :: TrackingURI -> RunID -> IO Run
 -- | Update run metadata.
 updateRun :: TrackingURI -> RunID -> RunStatus -> Maybe Int -> IO RunInfo
 
+-- | Shorthand for ending a run.
+endRun :: TrackingURI -> RunID -> IO RunInfo
+
 -- | Log a metric for a run. A metric is a key-value pair (string key,
 --   float value) with an associated timestamp. Examples include the
 --   various metrics that represent ML model accuracy. A metric can be
@@ -459,7 +462,7 @@ logMetric :: TrackingURI -> RunID -> String -> Float -> Int -> IO (Response Byte
 --   request), partial data may be written.
 logBatch :: TrackingURI -> RunID -> [Metric] -> [Param] -> [Tag] -> IO (Response ByteString)
 
--- | Just for Convenience
+-- | Just for Convenience, turns maps into Metric and Param types
 logBatch' :: TrackingURI -> RunID -> Int -> Map String Float -> Map String String -> IO (Response ByteString)
 
 -- | Log a param used for a run. A param is a key-value pair (string key,

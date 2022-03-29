@@ -7,6 +7,7 @@ import qualified Data.Map              as M
 import qualified Data.ByteString.Lazy  as BL
 import Network.Wreq
 import Control.Lens
+import Control.Monad
 
 main :: IO ()
 main = putStrLn "Test suite not yet implemented"

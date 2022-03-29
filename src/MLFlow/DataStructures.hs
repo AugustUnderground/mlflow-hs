@@ -7,7 +7,6 @@
 -- | MLFlow Bindings
 module MLFlow.DataStructures where
 
---import Data.Maybe       (fromJust)
 import Data.Aeson
 import GHC.Generics
 

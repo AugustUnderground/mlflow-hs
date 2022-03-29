@@ -9,20 +9,13 @@ module MLFlow where
 
 import MLFlow.DataStructures
 
--- import Data.Char             (isLower)
--- import Data.List             (isInfixOf, isPrefixOf, isSuffixOf, elemIndex)
 import Data.Maybe            (fromJust)
 import Data.Aeson
 import Network.Wreq
 import Control.Lens
--- import Control.Monad
--- import GHC.Generics
 import Data.Time.Clock.POSIX (getPOSIXTime)
--- import System.Directory
 import qualified Data.Map              as M
 import qualified Data.ByteString.Lazy  as BL
--- import qualified Data.ByteString       as BS hiding (pack)
--- import qualified Data.ByteString.Char8 as BS        (pack)
 
 ------------------------------------------------------------------------------
 -- Tracking
@@ -174,6 +167,11 @@ updateRun baseUrl runId' status' endTime' = do
     url     = baseUrl ++ "/api/2.0/mlflow/runs/update"
     payload = toJSON (RunUpdater runId' status' endTime')
 
+-- | Shorthand for ending a run.
+endRun :: TrackingURI -> RunID -> IO RunInfo
+endRun baseUrl runId' = (round . (* 1000) <$> getPOSIXTime :: IO Int) 
+                            >>= updateRun baseUrl runId' Finished . Just
+
 ------------------------------------------------------------------------------
 -- Logging
 ------------------------------------------------------------------------------
@@ -198,15 +196,17 @@ logBatch :: TrackingURI -> RunID -> [Metric] -> [Param] -> [Tag]
          -> IO (Response BL.ByteString)
 logBatch baseUrl runId' metrics' params' tags' = post url payload
   where
-    payload = toJSON (MetricBatchLogger runId' metrics' params' (Just tags'))
-    url  = baseUrl ++ "/api/2.0/mlflow/runs/log-batch"
+    tags    = if null tags' then Nothing else Just tags'
+    payload = toJSON (MetricBatchLogger runId' metrics' params' tags)
+    url     = baseUrl ++ "/api/2.0/mlflow/runs/log-batch"
 
--- | Just for Convenience
+-- | Just for Convenience, turns maps into Metric and Param types
 logBatch' :: TrackingURI -> RunID -> Int -> M.Map String Float 
           -> M.Map String String -> IO (Response BL.ByteString)
 logBatch' baseUrl runId' step metrics parameters = do
     timeStamp <- (round . (* 1000) <$> getPOSIXTime :: IO Int)
-    let metrics' = M.elems $ M.mapWithKey (\key value -> Metric key value timeStamp (Just step)) metrics
+    let kv2m k v = Metric k v timeStamp (Just step)
+        metrics' = M.elems $ M.mapWithKey kv2m metrics
         params'  = M.elems $ M.mapWithKey Param parameters
     logBatch baseUrl runId' metrics' params' []
 
